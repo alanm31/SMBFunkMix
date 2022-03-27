@@ -60,19 +60,20 @@ class Main extends Sprite
 
 		if you have any questions like I said, shoot me a message or something, I'm totally cool with it even if it's just help with programming or something
 		>	fair warning I'm not a very good programmer
-	 */
-	// class action variables
-	public static var gameWidth:Int = 960; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
+
+	 */	// class action variables
+	public static var gameWidth:Int = 1280; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
 	public static var gameHeight:Int = 720; // Height of the game in pixels (might be less / more in actual pixels depending on your zoom).
 
 	public static var mainClassState:Class<FlxState> = Init; // Determine the main class state of the game
 	public static var framerate:Int = 120; // How many frames per second the game should run at.
 
-	public static var gameVersion:String = '0.2.4.2';
+	public static var gameVersion:String = '0.3';
 
 	var zoom:Float = -1; // If -1, zoom is automatically calculated to fit the window dimensions.
 	var skipSplash:Bool = true; // Whether to skip the flixel splash screen that appears in release mode.
 	var infoCounter:InfoHud; // initialize the heads up display that shows information before creating it.
+
 
 	// heres gameweeks set up!
 
