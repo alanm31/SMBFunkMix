@@ -15,7 +15,7 @@
 	<!-- ____________________________ Window Settings ___________________________ -->
 
 	<!--These window settings apply to all targets-->
-	<window width="960" height="720" fps="" background="#000000" hardware="true" vsync="false" />
+	<window width="1280" height="720" fps="" background="#000000" hardware="true" vsync="false" />
 
 	<!--HTML5-specific-->
 	<window if="html5" resizable="true" />
@@ -24,10 +24,10 @@
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" />
 
 	<!--Mobile-specific-->
-	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" />
+	<window if="mobile" orientation="landscape" fullscreen="true" width="1280" height="720" resizable="false"/>
 
 	<!-- _____________________________ Path Settings ____________________________ -->
-
+	
 	<set name="BUILD_DIR" value="export" />
 	<source path="source" />
 	<assets path="assets" />
@@ -42,8 +42,12 @@
 	<haxelib name="flixel-addons" />
 	<haxelib name="hscript" />
 	<haxelib name="flixel-ui" />
-	<haxelib name="polymod"/>
-	<haxelib name="discord_rpc"/>
+	<haxelib name="discord_rpc" unless="android"/>
+        <haxelib name="AndroidTools" if="android"/>
+
+        <config:android permission="android.permission.READ_EXTERNAL_STORAGE" if="android"/>
+        <config:android permission="android.permission.WRITE_EXTERNAL_STORAGE" if="android"/>
+	
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
