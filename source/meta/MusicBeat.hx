@@ -9,7 +9,11 @@ import meta.*;
 import meta.data.*;
 import meta.data.Conductor.BPMChangeEvent;
 import meta.data.dependency.FNFUIState;
-import meta.state.PlayState;
+#if android
+import flixel.input.actions.FlxActionInput;
+import android.AndroidControls.AndroidControls;
+import android.FlxVirtualPad;
+#end
 
 /* 
 	Music beat state happens to be the first thing on my list of things to add, it just so happens to be the backbone of
@@ -32,12 +36,79 @@ class MusicBeatState extends FNFUIState
 	inline function get_controls():Controls
 		return PlayerSettings.player1.controls;
 
+	#if android
+	var _virtualpad:FlxVirtualPad;
+	var androidc:AndroidControls;
+	var trackedinputsUI:Array<FlxActionInput> = [];
+	var trackedinputsNOTES:Array<FlxActionInput> = [];
+	#end
+	
+	#if android
+	public function addVirtualPad(?DPad:FlxDPadMode, ?Action:FlxActionMode) {
+		_virtualpad = new FlxVirtualPad(DPad, Action);
+		_virtualpad.alpha = 0.75;
+		add(_virtualpad);
+		controls.setVirtualPadUI(_virtualpad, DPad, Action);
+		trackedinputsUI = controls.trackedinputsUI;
+		controls.trackedinputsUI = [];
+	}
+	#end
+
+	#if android
+	public function addAndroidControls() {
+                androidc = new AndroidControls();
+
+		switch (androidc.mode)
+		{
+			case VIRTUALPAD_RIGHT | VIRTUALPAD_LEFT | VIRTUALPAD_CUSTOM:
+				controls.setVirtualPadNOTES(androidc.vpad, FULL, NONE);
+			case DUO:
+				controls.setVirtualPadNOTES(androidc.vpad, DUO, NONE);
+			case HITBOX:
+				controls.setHitBox(androidc.hbox);
+			default:
+		}
+
+		trackedinputsNOTES = controls.trackedinputsNOTES;
+		controls.trackedinputsNOTES = [];
+
+		var camcontrol = new flixel.FlxCamera();
+		FlxG.cameras.add(camcontrol);
+		camcontrol.bgColor.alpha = 0;
+		androidc.cameras = [camcontrol];
+
+		androidc.visible = false;
+
+		add(androidc);
+	}
+	#end
+
+	#if android
+        public function addPadCamera() {
+		var camcontrol = new flixel.FlxCamera();
+		FlxG.cameras.add(camcontrol);
+		camcontrol.bgColor.alpha = 0;
+		_virtualpad.cameras = [camcontrol];
+	}
+	#end
+	
+	override function destroy() {
+		#if android
+		controls.removeFlxInput(trackedinputsUI);
+		controls.removeFlxInput(trackedinputsNOTES);	
+		#end	
+		
+		super.destroy();
+	}
+
 	// class create event
 	override function create()
 	{
-		// dump the cache if you're going elsewhere
-		if (Main.lastState != this)
-			Main.dumpCache();
+		// dump
+		Paths.clearStoredMemory();
+		if ((!Std.isOfType(this,meta.state.PlayState)) 
+		&& (!Std.isOfType(this, meta.state.charting.OriginalChartingState)))
+			Paths.clearUnusedMemory();
 
 		if (transIn != null)
 			trace('reg ' + transIn.region);
@@ -60,15 +131,37 @@ class MusicBeatState extends FNFUIState
 
 	public function updateContents()
 	{
-		// everyStep();
-		var oldStep:Int = curStep;
-
 		updateCurStep();
 		updateBeat();
 
-		if (oldStep != curStep && curStep > 0)
+		// delta time bullshit 
+		var trueStep:Int = curStep;
+		for (i in storedSteps)
+			if (i < oldStep)
+				storedSteps.remove(i);
+		for (i in oldStep...trueStep) {
+			if (!storedSteps.contains(i) && i > 0) {
+				curStep = i;
+				stepHit();
+				skippedSteps.push(i);
+			}
+		}
+		if (skippedSteps.length > 0) {
+			trace('skipped steps $skippedSteps');
+			skippedSteps = [];
+		}
+		curStep = trueStep;
+
+		//
+		if (oldStep != curStep && curStep > 0 
+			&& !storedSteps.contains(curStep)) 
 			stepHit();
+		oldStep = curStep;
 	}
+
+	var oldStep:Int = 0;
+	var storedSteps:Array<Int> = [];
+	var skippedSteps:Array<Int> = [];
 
 	public function updateBeat():Void
 	{
@@ -95,6 +188,13 @@ class MusicBeatState extends FNFUIState
 	{
 		if (curStep % 4 == 0)
 			beatHit();
+		
+		// trace('step $curStep');
+
+		if (!storedSteps.contains(curStep))
+			storedSteps.push(curStep);
+		else
+			trace('SOMETHING WENT WRONG??? STEP REPEATED $curStep');
 	}
 
 	public function beatHit():Void
@@ -119,6 +219,41 @@ class MusicBeatSubState extends FlxSubState
 
 	inline function get_controls():Controls
 		return PlayerSettings.player1.controls;
+
+	#if android
+	var _virtualpad:FlxVirtualPad;
+	var trackedinputsUI:Array<FlxActionInput> = [];
+	var trackedinputsNOTES:Array<FlxActionInput> = [];
+	#end
+	
+	#if android
+	public function addVirtualPad(?DPad:FlxDPadMode, ?Action:FlxActionMode) {
+		_virtualpad = new FlxVirtualPad(DPad, Action);
+		_virtualpad.alpha = 0.75;
+		add(_virtualpad);
+		controls.setVirtualPadUI(_virtualpad, DPad, Action);
+		trackedinputsUI = controls.trackedinputsUI;
+		controls.trackedinputsUI = [];
+	}
+	#end
+
+	#if android
+        public function addPadCamera() {
+		var camcontrol = new flixel.FlxCamera();
+		FlxG.cameras.add(camcontrol);
+		camcontrol.bgColor.alpha = 0;
+		_virtualpad.cameras = [camcontrol];
+	}
+	#end
+	
+	override function destroy() {
+		#if android
+		controls.removeFlxInput(trackedinputsUI);
+		controls.removeFlxInput(trackedinputsNOTES);	
+		#end	
+		
+		super.destroy();
+	}
 
 	override function update(elapsed:Float)
 	{
