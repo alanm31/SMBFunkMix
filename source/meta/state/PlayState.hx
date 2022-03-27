@@ -169,10 +169,12 @@ class PlayState extends MusicBeatState
 	private var allUIs:Array<FlxCamera> = [];
 
 	public var ratingPos:FlxPoint;
-	// stores the last judgement object
+		// stores the last judgement object
 	public static var lastRating:FlxSprite;
 	// stores the last combo objects in an array
 	public static var lastCombo:Array<FlxSprite>;
+
+	var controllermode:Bool = #if android true #else false #end;
 
 	public static var blackBox:FlxShapeBox;
 	public static var marioSwim:FlxSprite;
